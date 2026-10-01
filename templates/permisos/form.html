@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block title %}Nuevo Permiso - INDA{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-file-medical"></i> Solicitar Permiso</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">ID del Profesor</label>
+                        <input type="number" name="id_profesor" class="form-control" required placeholder="Ej: 1">
+                        <small class="text-muted">Ingresa el ID del profesor (puedes verlo en la BD o API).</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Permiso</label>
+                        <select name="tipo_permiso" class="form-select" required>
+                            <option value="Enfermedad">Enfermedad</option>
+                            <option value="Personal">Personal</option>
+                            <option value="Maternidad">Maternidad</option>
+                            <option value="Calamidad">Calamidad Doméstica</option>
+                            <option value="Estudio">Estudio</option>
+                            <option value="Otros">Otros</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha Inicio</label>
+                            <input type="date" name="fecha_inicio" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha Fin</label>
+                            <input type="date" name="fecha_fin" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Horas Afectadas</label>
+                        <input type="number" step="0.01" name="horas_afectadas" class="form-control" placeholder="Ej: 8.00">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motivo</label>
+                        <textarea name="motivo" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
+                        <a href="{% url 'permisos:lista' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

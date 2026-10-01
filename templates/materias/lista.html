@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Materias - INDA{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-book"></i> Módulo de Materias</h2>
+    {% if puede_editar %}
+    <a href="{% url 'materias:crear' %}" class="btn btn-success">
+        <i class="fas fa-plus"></i> Nueva Materia
+    </a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Créditos</th>
+                    {% if puede_editar %}
+                    <th>Acciones</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for materia in materias %}
+                <tr>
+                    <td>{{ materia.codigo }}</td>
+                    <td>{{ materia.nombre }}</td>
+                    <td>{{ materia.creditos }}</td>
+                    {% if puede_editar %}
+                    <td>
+                        <a href="{% url 'materias:editar' materia.pk %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'materias:eliminar' materia.pk %}" class="btn btn-sm btn-danger" 
+                           onclick="return confirm('¿Eliminar materia?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if puede_editar %}4{% else %}3{% endif %}" class="text-center text-muted">
+                        No hay materias registradas
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
