@@ -1,7 +1,5 @@
 from django.db import models
 
-from django.db import models
-
 class Permiso(models.Model):
     id_permiso = models.AutoField(primary_key=True)
     id_profesor = models.IntegerField()
@@ -13,10 +11,11 @@ class Permiso(models.Model):
     estado = models.CharField(max_length=20, default='pendiente')
     id_usuario_registro = models.IntegerField()
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    comprobante = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         db_table = 'permisos'
-        managed = False  
+        managed = False
 
     def __str__(self):
         return f"Permiso #{self.id_permiso} - {self.tipo_permiso}"

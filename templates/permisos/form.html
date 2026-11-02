@@ -1,54 +1,132 @@
 {% extends 'base.html' %}
-{% block title %}Nuevo Permiso - INDA{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-file-medical"></i> Solicitar Permiso</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">ID del Profesor</label>
-                        <input type="number" name="id_profesor" class="form-control" required placeholder="Ej: 1">
-                        <small class="text-muted">Ingresa el ID del profesor (puedes verlo en la BD o API).</small>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tipo de Permiso</label>
-                        <select name="tipo_permiso" class="form-select" required>
-                            <option value="Enfermedad">Enfermedad</option>
-                            <option value="Personal">Personal</option>
-                            <option value="Maternidad">Maternidad</option>
-                            <option value="Calamidad">Calamidad Doméstica</option>
-                            <option value="Estudio">Estudio</option>
-                            <option value="Otros">Otros</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fecha Inicio</label>
-                            <input type="date" name="fecha_inicio" class="form-control" required>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-alt"></i> 
+                        {% if accion == 'Crear' %}Nuevo Permiso{% else %}Editar Permiso{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        
+                        {% if not es_profesor and accion == 'Crear' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-user text-primary"></i> Profesor <span class="text-danger">*</span>
+                            </label>
+                            <select name="id_profesor" class="form-select" required>
+                                <option value="">-- Seleccionar Profesor --</option>
+                                {% for prof in profesores %}
+                                <option value="{{ prof.id_profesor }}">{{ prof.nombre }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fecha Fin</label>
-                            <input type="date" name="fecha_fin" class="form-control" required>
+                        {% endif %}
+
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-tag text-primary"></i> Tipo de Permiso <span class="text-danger">*</span>
+                            </label>
+                            <select name="tipo_permiso" class="form-select" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Permiso medico" {% if permiso.tipo_permiso == 'Permiso medico' %}selected{% endif %}>Permiso médico</option>
+                                <option value="Permiso personal" {% if permiso.tipo_permiso == 'Permiso personal' %}selected{% endif %}>Permiso personal</option>
+                                <option value="Permiso por duelo" {% if permiso.tipo_permiso == 'Permiso por duelo' %}selected{% endif %}>Permiso por duelo</option>
+                                <option value="Permiso por maternidad" {% if permiso.tipo_permiso == 'Permiso por maternidad' %}selected{% endif %}>Permiso por maternidad</option>
+                                <option value="Vacaciones" {% if permiso.tipo_permiso == 'Vacaciones' %}selected{% endif %}>Vacaciones</option>
+                                <option value="Otro" {% if permiso.tipo_permiso == 'Otro' %}selected{% endif %}>Otro</option>
+                            </select>
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Horas Afectadas</label>
-                        <input type="number" step="0.01" name="horas_afectadas" class="form-control" placeholder="Ej: 8.00">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Motivo</label>
-                        <textarea name="motivo" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                        <a href="{% url 'permisos:lista' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
-                    </div>
-                </form>
+
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calendar text-primary"></i> Fecha de Inicio <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="fecha_inicio" class="form-control" 
+                                       value="{{ permiso.fecha_inicio|default:'' }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-calendar text-primary"></i> Fecha de Fin <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="fecha_fin" class="form-control" 
+                                       value="{{ permiso.fecha_fin|default:'' }}" required>
+                            </div>
+                        </div>
+
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-clock text-primary"></i> Horas Afectadas
+                            </label>
+                            <input type="number" name="horas_afectadas" class="form-control" 
+                                   value="{{ permiso.horas_afectadas|default:0 }}" min="0" max="24">
+                        </div>
+
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-comment text-primary"></i> Motivo
+                            </label>
+                            <textarea name="motivo" class="form-control" rows="3">{{ permiso.motivo|default:'' }}</textarea>
+                        </div>
+
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-paperclip text-primary"></i> Comprobante (Foto/Documento) <span class="text-danger">*</span>
+                            </label>
+                            <input type="file" name="comprobante" class="form-control" accept="image/*,.pdf" required>
+                            <small class="text-muted d-block mb-2">
+                                <i class="fas fa-info-circle"></i> Debes subir una foto o documento PDF como comprobante
+                            </small>
+                            
+                            {% if permiso.comprobante %}
+                            <div class="mt-2 p-2 bg-light rounded border">
+                                <span class="text-muted small d-block mb-1">Comprobante actual:</span>
+                                
+                                <a href="/media/{{ permiso.comprobante }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Ver comprobante actual
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        
+                        {% if accion == 'Editar' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-check-circle text-primary"></i> Estado
+                            </label>
+                            <select name="estado" class="form-select">
+                                <option value="pendiente" {% if permiso.estado == 'pendiente' %}selected{% endif %}>Pendiente</option>
+                                <option value="aprobado" {% if permiso.estado == 'aprobado' %}selected{% endif %}>Aprobado</option>
+                                <option value="rechazado" {% if permiso.estado == 'rechazado' %}selected{% endif %}>Rechazado</option>
+                            </select>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                            <a href="/permisos/" class="btn btn-secondary px-4">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

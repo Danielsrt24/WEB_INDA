@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-chalkboard-teacher text-primary"></i> Distribución de Maestros
+            </h2>
+            <p class="text-muted mb-0">Asignación de profesores a materias y secciones</p>
+        </div>
+        <div>
+            <a href="{% url 'distribucion:crear' %}" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> Nueva Distribución
+            </a>
+            <a href="/dashboard/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><i class="fas fa-user"></i> Profesor</th>
+                            <th><i class="fas fa-book"></i> Materia</th>
+                            <th><i class="fas fa-users"></i> Sección</th>
+                            <th><i class="fas fa-clock"></i> Horas/Semana</th>
+                            <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dist in distribuciones %}
+                        <tr>
+                            <td>
+                                {% for p in profesores %}
+                                    {% if p.id_profesor == dist.id_profesor_id %}
+                                        <strong>{{ p.nombre }}</strong>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for m in materias %}
+                                    {% if m.id_materia == dist.id_materia_id %}
+                                        {{ m.nombre }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for s in secciones %}
+                                    {% if s.id_seccion == dist.id_seccion_id %}
+                                        <span class="badge bg-info">{{ s.nombre }}</span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ dist.horas_semanales }} hrs</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'distribucion:editar' dist.id_distribucion %}" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'distribucion:eliminar' dist.id_distribucion %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Eliminar esta distribución?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                No hay distribuciones registradas.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

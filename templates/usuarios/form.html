@@ -1,45 +1,114 @@
 {% extends 'base.html' %}
-{% block title %}Nuevo Usuario - INDA{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Crear Nuevo Usuario</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Nombre de Usuario</label>
-                        <input type="text" name="username" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Contraseña</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Nombre Completo</label>
-                        <input type="text" name="nombre" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Rol</label>
-                        <select name="rol" class="form-select" required>
-                            <option value="Director">Director</option>
-                            <option value="Subdirector">Subdirector</option>
-                            <option value="Secretaria">Secretaria</option>
-                            <option value="Profesor">Profesor</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email (Opcional)</label>
-                        <input type="email" name="email" class="form-control">
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar</button>
-                        <a href="{% url 'usuarios:lista' %}" class="btn btn-secondary"><i class="fas fa-times"></i> Cancelar</a>
-                    </div>
-                </form>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-cog"></i> 
+                        {% if accion == 'Crear' %}Nuevo Usuario{% else %}Editar Usuario{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-user text-primary"></i> Username <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="username" class="form-control" 
+                                   value="{{ usuario.username|default:'' }}" 
+                                   {% if accion == 'Editar' %}readonly{% endif %} required>
+                            {% if accion == 'Editar' %}
+                            <small class="text-muted">El username no se puede cambiar</small>
+                            {% endif %}
+                        </div>
+
+                        {% if accion == 'Crear' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-lock text-primary"></i> Contraseña <span class="text-danger">*</span>
+                            </label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        {% else %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-lock text-primary"></i> Nueva Contraseña
+                            </label>
+                            <input type="password" name="password" class="form-control" 
+                                   placeholder="Deja en blanco para mantener la actual">
+                            <small class="text-muted">Déjalo en blanco si no quieres cambiarla</small>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-id-card text-primary"></i> Nombre Completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" name="nombre" class="form-control" 
+                                   value="{{ usuario.nombre|default:'' }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-envelope text-primary"></i> Email
+                            </label>
+                            <input type="email" name="email" class="form-control" 
+                                   value="{{ usuario.email|default:'' }}">
+                        </div>
+
+                        {% if accion == 'Crear' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-user-tag text-primary"></i> Rol <span class="text-danger">*</span>
+                            </label>
+                            <select name="rol" class="form-select" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Director">
+                                    <i class="fas fa-crown"></i> Director
+                                </option>
+                                <option value="Subdirector">
+                                    <i class="fas fa-user-tie"></i> Subdirector
+                                </option>
+                                <option value="Secretaria">
+                                    <i class="fas fa-user-edit"></i> Secretaria
+                                </option>
+                                <option value="Profesor">
+                                    <i class="fas fa-chalkboard-teacher"></i> Profesor
+                                </option>
+                            </select>
+                        </div>
+                        {% endif %}
+
+                        {% if accion == 'Editar' %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-check-circle text-primary"></i> Estado
+                            </label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="estado" 
+                                       id="estado" {% if usuario.estado == 1 %}checked{% endif %}>
+                                <label class="form-check-label" for="estado">
+                                    Usuario Activo
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                            <a href="{% url 'usuarios:lista' %}" class="btn btn-secondary px-4">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

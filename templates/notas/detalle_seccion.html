@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load notas_tags %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-clipboard-list text-primary"></i> Notas - {{ seccion.nombre }}
+            </h2>
+            <p class="text-muted mb-0">
+                <i class="fas fa-book"></i> {{ materia.nombre }}
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'notas:crear' distribucion.id_distribucion %}" class="btn btn-primary me-2">
+                <i class="fas fa-plus"></i> Nueva Nota
+            </a>
+            <a href="{% url 'notas:menu' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    
+    <ul class="nav nav-tabs mb-4 bg-dark border-dark rounded" id="tipoEvaluacionTabs" role="tablist">
+        {% for tipo in tipos_evaluacion %}
+        <li class="nav-item" role="presentation">
+            <button class="nav-link text-white border-0 {% if forloop.first %}active bg-secondary{% endif %}" 
+                    id="tab-{{ forloop.counter }}" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#content-{{ forloop.counter }}" 
+                    type="button" role="tab"
+                    style="background-color: #212529; color: #fff;">
+                {% if tipo == 'Examen Parcial' %}<i class="fas fa-file-alt"></i>
+                {% elif tipo == 'Examen Final' %}<i class="fas fa-graduation-cap"></i>
+                {% elif tipo == 'Tarea' %}<i class="fas fa-tasks"></i>
+                {% elif tipo == 'Proyecto' %}<i class="fas fa-project-diagram"></i>
+                {% elif tipo == 'Laboratorio' %}<i class="fas fa-flask"></i>
+                {% elif tipo == 'Quizz' %}<i class="fas fa-question-circle"></i>
+                {% elif tipo == 'Participación' %}<i class="fas fa-comments"></i>
+                {% endif %}
+                {{ tipo }}
+            </button>
+        </li>
+        {% endfor %}
+    </ul>
+
+    
+    <div class="tab-content" id="tipoEvaluacionContent">
+        {% for tipo in tipos_evaluacion %}
+        <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" 
+             id="content-{{ forloop.counter }}" role="tabpanel">
+            
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th style="width: 300px;"><i class="fas fa-user"></i> Estudiante</th>
+                                    <th class="text-center"><i class="fas fa-calendar-day"></i> P1</th>
+                                    <th class="text-center"><i class="fas fa-calendar-day"></i> P2</th>
+                                    <th class="text-center"><i class="fas fa-calendar-day"></i> P3</th>
+                                    <th class="text-center"><i class="fas fa-calendar-day"></i> P4</th>
+                                    <th class="text-center"><i class="fas fa-chart-line"></i> Promedio</th>
+                                    {% if rol_usuario != 'Secretaria' %}
+                                    <th class="text-center"><i class="fas fa-cogs"></i> Acciones</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for est in estudiantes %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user-circle fa-2x text-secondary me-2"></i>
+                                            <div>
+                                                <strong>{{ est.nombre }}</strong><br>
+                                                <small class="text-muted"><i class="fas fa-id-card"></i> {{ est.cedula }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    
+                                    {% with datos=est.periodos|get_item:tipo %}
+                                    <td class="text-center">
+                                        <input type="number" step="0.01" min="0" max="10"
+                                               class="form-control form-control-sm nota-input {% if datos.p1 >= 7 %}is-valid{% elif datos.p1 is not None %}is-invalid{% endif %}"
+                                               data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 1" data-periodo="p1"
+                                               value="{{ datos.p1|default:'' }}" placeholder="-"
+                                               {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="number" step="0.01" min="0" max="10"
+                                               class="form-control form-control-sm nota-input {% if datos.p2 >= 7 %}is-valid{% elif datos.p2 is not None %}is-invalid{% endif %}"
+                                               data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 2" data-periodo="p2"
+                                               value="{{ datos.p2|default:'' }}" placeholder="-"
+                                               {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="number" step="0.01" min="0" max="10"
+                                               class="form-control form-control-sm nota-input {% if datos.p3 >= 7 %}is-valid{% elif datos.p3 is not None %}is-invalid{% endif %}"
+                                               data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 3" data-periodo="p3"
+                                               value="{{ datos.p3|default:'' }}" placeholder="-"
+                                               {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="number" step="0.01" min="0" max="10"
+                                               class="form-control form-control-sm nota-input {% if datos.p4 >= 7 %}is-valid{% elif datos.p4 is not None %}is-invalid{% endif %}"
+                                               data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 4" data-periodo="p4"
+                                               value="{{ datos.p4|default:'' }}" placeholder="-"
+                                               {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
+                                    </td>
+                                    <td class="text-center">
+                                        <div id="promedio-{{ est.cedula }}-{{ tipo|slugify }}">
+                                            {% if datos.promedio is not None %}
+                                                <strong class="{% if datos.promedio >= 7 %}text-success{% else %}text-danger{% endif %}" style="font-size:1.2rem;">
+                                                    {{ datos.promedio|floatformat:1 }}
+                                                </strong>
+                                            {% else %}<span class="text-muted">-</span>{% endif %}
+                                        </div>
+                                    </td>
+                                    
+                                    {% if rol_usuario != 'Secretaria' %}
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-success btn-guardar" 
+                                                data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }}" title="Guardar">
+                                            <i class="fas fa-save"></i>
+                                        </button>
+                                    </td>
+                                    {% endif %}
+                                    {% endwith %}
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                                        <p class="mb-0">No hay estudiantes en esta sección.</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .nota-input { transition: all 0.3s; text-align: center; font-weight: bold; border-radius: 6px; }
+    .nota-input:focus { transform: scale(1.05); box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25); z-index: 10; position: relative; }
+    .nota-input.is-valid { background-color: #d1e7dd !important; }
+    .nota-input.is-invalid { background-color: #f8d7da !important; }
+    .btn-guardar { opacity: 0; transition: opacity 0.3s; }
+    tr:hover .btn-guardar { opacity: 1; }
+    .nav-tabs .nav-link i { margin-right: 5px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const idDistribucion = {{ distribucion.id_distribucion }};
+    const inputs = document.querySelectorAll('.nota-input');
+    const botonesGuardar = document.querySelectorAll('.btn-guardar');
+    const valoresOriginales = {};
+    
+    inputs.forEach(input => { valoresOriginales[input] = input.value; });
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() { guardarNotaIndividual(this); });
+        input.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); this.blur(); } });
+        input.addEventListener('focus', function() { this.select(); });
+    });
+    
+    botonesGuardar.forEach(btn => {
+        btn.addEventListener('click', function() {
+            guardarTodasLasNotas(this.dataset.carnet, this.dataset.tipo);
+        });
+    });
+    
+    function guardarNotaIndividual(input) {
+        const valor = input.value.trim();
+        const carnet = input.dataset.carnet;
+        const tipo = input.dataset.tipo;
+        
+        if (valor === '') { input.classList.remove('is-valid', 'is-invalid'); input.value = ''; return; }
+        
+        const notaValor = parseFloat(valor);
+        if (isNaN(notaValor) || notaValor < 0 || notaValor > 10) {
+            input.classList.add('is-invalid'); input.classList.remove('is-valid');
+            input.value = valoresOriginales[input] || '';
+            mostrarNotificacion('La nota debe estar entre 0 y 10', 'warning');
+            return;
+        }
+        
+        input.style.backgroundColor = '#fff3cd'; input.disabled = true;
+        
+        fetch("{% url 'notas:guardar_nota_ajax' %}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ id_distribucion: idDistribucion, carnet: carnet, tipo_evaluacion: tipo, nota: notaValor })
+        })
+        .then(response => response.json())
+        .then(data => {
+            input.disabled = false;
+            if (data.success) {
+                input.classList.remove('is-invalid'); input.classList.add('is-valid');
+                input.style.backgroundColor = '';
+                valoresOriginales[input] = input.value;
+                actualizarPromedio(carnet, tipo);
+                mostrarNotificacion(data.mensaje, 'success');
+            } else {
+                input.classList.add('is-invalid'); input.classList.remove('is-valid');
+                input.style.backgroundColor = ''; input.value = valoresOriginales[input] || '';
+                mostrarNotificacion(data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            input.disabled = false; input.classList.add('is-invalid');
+            input.style.backgroundColor = ''; input.value = valoresOriginales[input] || '';
+            mostrarNotificacion('Error de conexión con el servidor', 'danger');
+        });
+    }
+    
+    function guardarTodasLasNotas(carnet, tipo) {
+        const inputsEstudiante = document.querySelectorAll(`.nota-input[data-carnet="${carnet}"]`);
+        let guardadas = 0;
+        inputsEstudiante.forEach(input => { if (input.value.trim() !== '') { guardarNotaIndividual(input); guardadas++; } });
+        if (guardadas > 0) setTimeout(() => mostrarNotificacion(`${guardadas} nota(s) guardada(s)`, 'success'), 500);
+        else mostrarNotificacion('No hay notas para guardar', 'info');
+    }
+    
+    function actualizarPromedio(carnet, tipo) {
+        const inputs = document.querySelectorAll(`.nota-input[data-carnet="${carnet}"][data-tipo^="${tipo}"]`);
+        let suma = 0, count = 0;
+        inputs.forEach(input => { const valor = parseFloat(input.value); if (!isNaN(valor)) { suma += valor; count++; } });
+        const promedio = count > 0 ? (suma / count).toFixed(1) : '-';
+        const slugTipo = tipo.toLowerCase().replace(/\s+/g, '-');
+        const el = document.getElementById(`promedio-${carnet}-${slugTipo}`);
+        if (el) {
+            if (promedio !== '-') {
+                const val = parseFloat(promedio);
+                el.innerHTML = `<strong class="${val >= 7 ? 'text-success' : 'text-danger'}" style="font-size:1.2rem;">${promedio}</strong>`;
+            } else { el.innerHTML = '<span class="text-muted">-</span>'; }
+        }
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

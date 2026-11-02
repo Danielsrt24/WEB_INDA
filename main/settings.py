@@ -2,7 +2,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = ''
+SECRET_KEY = 'INDA-2026-Bachillerato-Sistema-Gestion-Academica-Salvador!@#$%'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'secciones',
     'notas',
     'usuarios',
+    'reportes',
 
 ]
 
@@ -47,6 +48,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.usuario_context',
             ],
         },
     },
@@ -54,7 +56,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'main.wsgi.application'
 
-# Conexión a MySQL (XAMPP) - la misma BD que usa FastAPI
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -78,9 +80,17 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# Login
+
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'login'
+
+import os
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000

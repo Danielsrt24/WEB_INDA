@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2> Tabla de Horarios</h2>
+    <a href="{% url 'horario:lista' %}" class="btn btn-secondary mb-3">← Volver</a>
+
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>Día</th>
+                <th>Horarios</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dia in dias %}
+            <tr>
+                <td><strong>{{ dia }}</strong></td>
+                <td>
+                    {% if dia in horas %}
+                        {% for h in horas.dia %}
+                            <span class="badge bg-info">
+                                {{ h.hora_inicio }} - {{ h.hora_fin }} | Aula: {{ h.aula|default:"-" }}
+                            </span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="text-muted">Sin clases</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-plus-circle"></i> Nueva Nota</h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Sección:</strong> {{ distribucion.id_seccion.nombre }} | 
+                            <i class="fas fa-book"></i> <strong>Materia:</strong> {{ distribucion.id_materia.nombre }}
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="fas fa-id-card text-primary"></i> NIE/Cédula del Estudiante <span class="text-danger">*</span></label>
+                            <input type="text" name="carnet_estudiante" id="carnet_estudiante" class="form-control" placeholder="Escribe la cédula o nombre..." required autocomplete="off">
+                            <small class="text-muted"><i class="fas fa-lightbulb"></i> Escribe para buscar estudiantes de esta sección</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="fas fa-user text-primary"></i> Nombre del Estudiante <span class="text-danger">*</span></label>
+                            <input type="text" name="nombre_estudiante" id="nombre_estudiante" class="form-control" placeholder="Se autocompleta al seleccionar" required readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold"><i class="fas fa-clipboard-check text-primary"></i> Tipo de Evaluación <span class="text-danger">*</span></label>
+                            <select name="tipo_evaluacion" class="form-select" required>
+                                <option value="">-- Seleccionar --</option>
+                                <option value="Examen Parcial - Periodo 1">Examen Parcial - Periodo 1</option>
+                                <option value="Examen Parcial - Periodo 2">Examen Parcial - Periodo 2</option>
+                                <option value="Examen Parcial - Periodo 3">Examen Parcial - Periodo 3</option>
+                                <option value="Examen Parcial - Periodo 4">Examen Parcial - Periodo 4</option>
+                                <option value="Examen Final - Periodo 1">Examen Final - Periodo 1</option>
+                                <option value="Examen Final - Periodo 2">Examen Final - Periodo 2</option>
+                                <option value="Examen Final - Periodo 3">Examen Final - Periodo 3</option>
+                                <option value="Examen Final - Periodo 4">Examen Final - Periodo 4</option>
+                                <option value="Tarea - Periodo 1">Tarea - Periodo 1</option>
+                                <option value="Tarea - Periodo 2">Tarea - Periodo 2</option>
+                                <option value="Tarea - Periodo 3">Tarea - Periodo 3</option>
+                                <option value="Tarea - Periodo 4">Tarea - Periodo 4</option>
+                                <option value="Proyecto - Periodo 1">Proyecto - Periodo 1</option>
+                                <option value="Proyecto - Periodo 2">Proyecto - Periodo 2</option>
+                                <option value="Proyecto - Periodo 3">Proyecto - Periodo 3</option>
+                                <option value="Proyecto - Periodo 4">Proyecto - Periodo 4</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold"><i class="fas fa-star text-primary"></i> Calificación (0-10) <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="nota" class="form-control" value="0" min="0" max="10" required>
+                            <small class="text-muted"><i class="fas fa-info-circle"></i> La nota máxima es 10</small>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save"></i> Guardar</button>
+                            <a href="{% url 'notas:detalle_seccion' distribucion.id_distribucion %}" class="btn btn-secondary px-4"><i class="fas fa-times"></i> Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

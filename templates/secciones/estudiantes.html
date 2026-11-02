@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Estudiantes - {{ seccion.nombre }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-graduate"></i> Estudiantes de {{ seccion.nombre }}</h2>
+    <div>
+        <a href="{% url 'secciones:lista' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+        {% if puede_editar %}
+        <a href="{% url 'secciones:crear_estudiante' seccion.pk %}" class="btn btn-success">
+            <i class="fas fa-user-plus"></i> Nuevo Estudiante
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>NIE</th>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Sexo</th>
+                    <th>F. Nacimiento</th>
+                    {% if puede_editar %}
+                    <th>Acciones</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for est in estudiantes %}
+                <tr>
+                    <td>{{ est.cedula }}</td>
+                    <td>{{ est.nombre }}</td>
+                    <td>{{ est.apellido }}</td>
+                    <td>{{ est.get_sexo_display }}</td>
+                    <td>{{ est.fecha_nacimiento }}</td>
+                    {% if puede_editar %}
+                    <td>
+                        <a href="{% url 'secciones:editar_estudiante' est.pk %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'secciones:eliminar_estudiante' est.pk %}" class="btn btn-sm btn-danger" 
+                           onclick="return confirm('¿Eliminar estudiante?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if puede_editar %}6{% else %}5{% endif %}" class="text-center text-muted py-4">
+                        No hay estudiantes registrados en esta sección
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

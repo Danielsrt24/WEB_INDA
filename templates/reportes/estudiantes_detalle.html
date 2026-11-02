@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+        <h2><i class="fas fa-user-graduate text-warning"></i> {{ titulo }}</h2>
+        <div>
+            <button onclick="window.print()" class="btn btn-warning me-2 text-dark">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <a href="{% url 'reportes:menu' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped table-sm">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Sección</th>
+                            <th>Nivel</th>
+                            <th>Letra</th>
+                            <th>Cédula</th>
+                            <th>Apellido</th>
+                            <th>Nombre</th>
+                            <th class="text-center">Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for est in estudiantes %}
+                        <tr>
+                            <td>{{ est.id_seccion.nombre }}</td>
+                            <td>{{ est.id_seccion.nivel|default:"-" }}</td>
+                            <td>{{ est.id_seccion.letra|default:"-" }}</td>
+                            <td>{{ est.cedula }}</td>
+                            <td><strong>{{ est.apellido }}</strong></td>
+                            <td>{{ est.nombre }}</td>
+                            <td class="text-center">
+                                {% if est.estado %}
+                                    <span class="badge bg-success">Activo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactivo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .no-print, .navbar, .sidebar, footer { display: none !important; }
+    body { background: white !important; font-size: 12px; }
+    .card { border: none !important; box-shadow: none !important; }
+    .table { width: 100%; border-collapse: collapse; }
+    .table th, .table td { border: 1px solid #000 !important; padding: 4px; }
+    .badge { border: 1px solid #000; color: #000 !important; background: none !important; }
+}
+</style>
+{% endblock %}

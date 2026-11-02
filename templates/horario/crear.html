@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-plus"></i> Nuevo Horario
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-chalkboard-teacher text-primary"></i> Distribución
+                            </label>
+                            <select name="id_distribucion" class="form-select form-select-lg" required>
+                                <option value="">-- Seleccionar Distribución --</option>
+                                {% for dist in distribuciones %}
+                                <option value="{{ dist.id_distribucion }}">
+                                     {{ dist.id_profesor.nombre }} |  {{ dist.id_materia.nombre }} |  {{ dist.id_seccion.nombre }}
+                                </option>
+                                {% empty %}
+                                <option value="" disabled>No hay distribuciones registradas. Crea una primero.</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> Selecciona la asignación de profesor a materia y sección
+                            </small>
+                        </div>
+
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-calendar-day text-primary"></i> Día de la Semana
+                            </label>
+                            <select name="dia" class="form-select form-select-lg" required>
+                                <option value="">-- Seleccionar Día --</option>
+                                <option value="Lunes"> Lunes</option>
+                                <option value="Martes"> Martes</option>
+                                <option value="Miércoles"> Miércoles</option>
+                                <option value="Jueves"> Jueves</option>
+                                <option value="Viernes"> Viernes</option>
+                            </select>
+                        </div>
+
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-clock text-primary"></i> Hora de Inicio
+                                </label>
+                                <input type="time" name="hora_inicio" class="form-control form-control-lg" required>
+                            </div>
+                            <div class="col-md-6 mb-4">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-clock text-primary"></i> Hora de Fin
+                                </label>
+                                <input type="time" name="hora_fin" class="form-control form-control-lg" required>
+                            </div>
+                        </div>
+
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-door-open text-primary"></i> Aula
+                            </label>
+                            <input type="text" name="aula" class="form-control form-control-lg" 
+                                   placeholder="Ej: Aula 101, Laboratorio 2, Biblioteca">
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg px-4">
+                                <i class="fas fa-save"></i> Guardar Horario
+                            </button>
+                            <a href="/horario/" class="btn btn-secondary btn-lg px-4">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

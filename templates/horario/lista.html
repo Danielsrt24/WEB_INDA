@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2> Gestión de Horarios</h2>
+    
+    
+    {% if not es_profesor %}
+    <a href="{% url 'horario:crear' %}" class="btn btn-primary mb-3"> Nuevo Horario</a>
+    {% endif %}
+    <a href="{% url 'horario:tabla' %}" class="btn btn-info mb-3"> Ver Tabla</a>
+    <a href="{% url 'horario:menu' %}" class="btn btn-secondary mb-3">← Volver al Menú</a>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Día</th>
+                <th>Hora Inicio</th>
+                <th>Hora Fin</th>
+                <th>Aula</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for h in horarios %}
+            <tr>
+                <td>{{ h.dia }}</td>
+                <td>{{ h.hora_inicio }}</td>
+                <td>{{ h.hora_fin }}</td>
+                <td>{{ h.aula|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No hay horarios registrados</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

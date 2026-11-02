@@ -2,6 +2,7 @@ import bcrypt
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Usuario
+from core.helper import verify_password
 
 def home(request):
     """Redirige al dashboard si está logueado, si no, al login"""

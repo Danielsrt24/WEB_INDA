@@ -1,96 +1,213 @@
 {% extends 'base.html' %}
-{% block title %}Dashboard - INDA{% endblock %}
+
+{% block title %}Panel de Control - INDA{% endblock %}
+
 {% block content %}
-<h2 class="mb-4"><i class="fas fa-tachometer-alt"></i> Panel de Control</h2>
-<p class="text-muted">Bienvenido, {{ nombre }} ({{ rol }})</p>
-
-<div class="row g-4">
-    {% if rol == "Director" %}
-    <div class="col-md-4 col-lg-3">
-        <a href="{% url 'usuarios:lista' %}" class="text-decoration-none">
-            <div class="card card-menu text-white bg-dark h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-users-cog mb-3"></i>
-                    <h5>Usuarios</h5>
-                    <p class="small">Gestión de accesos</p>
-                </div>
-            </div>
-        </a>
-    </div>
-    {% endif %}
-
-    <div class="col-md-4 col-lg-3">
-        <a href="{% url 'permisos:lista' %}" class="text-decoration-none">
-            <div class="card card-menu text-white bg-primary h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-file-alt mb-3"></i>
-                    <h5>Permisos</h5>
-                    <p class="small">Gestión de permisos</p>
-                </div>
-            </div>
-        </a>
+<div class="container-fluid py-4">
+    
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-tachometer-alt text-primary"></i> Panel de Control
+            </h2>
+            <p class="text-muted mb-0">Bienvenido al sistema de gestión académica del INDA</p>
+        </div>
     </div>
 
-    <div class="col-md-4 col-lg-3">
-        <a href="{% url 'materias:lista' %}" class="text-decoration-none">
-            <div class="card card-menu text-white bg-success h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-book mb-3"></i>
-                    <h5>Materias</h5>
-                    <p class="small">Catálogo de materias</p>
+    
+    <div class="row g-4">
+        
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/usuarios/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #fd7e14 0%, #e8590c 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-users-cog"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Usuarios</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Director' %}
+                                Gestión completa
+                            {% elif rol_usuario == 'Subdirector' %}
+                                Gestión de usuarios
+                            {% else %}
+                                Ver usuarios
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    {% if rol != "Profesor" %}
-    <div class="col-md-4 col-lg-3">
-        <a href="#" class="text-decoration-none" onclick="alert('Módulo en desarrollo')">
-            <div class="card card-menu text-white bg-warning h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-chalkboard-teacher mb-3"></i>
-                    <h5>Distribución</h5>
-                    <p class="small">Asignación de maestros</p>
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/permisos/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Permisos</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Profesor' %}
+                                Mis solicitudes
+                            {% else %}
+                                Gestión de permisos
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    <div class="col-md-4 col-lg-3">
-        <a href="#" class="text-decoration-none" onclick="alert('Módulo en desarrollo')">
-            <div class="card card-menu text-white bg-info h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-calendar-alt mb-3"></i>
-                    <h5>Horario</h5>
-                    <p class="small">Horario general</p>
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/distribucion/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); color: #212529;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Distribución</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Profesor' %}
+                                Ver asignación
+                            {% else %}
+                                Asignación de maestros
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </a>
-    </div>
+            </a>
+        </div>
 
-    <div class="col-md-4 col-lg-3">
-        <a href="#" class="text-decoration-none" onclick="alert('Módulo en desarrollo')">
-            <div class="card card-menu text-white bg-secondary h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-users mb-3"></i>
-                    <h5>Secciones</h5>
-                    <p class="small">Gestión de secciones</p>
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/horario/menu/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Horarios</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Profesor' %}
+                                Mi horario
+                            {% else %}
+                                Gestión de horarios
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </a>
-    </div>
-    {% endif %}
+            </a>
+        </div>
 
-    <div class="col-md-4 col-lg-3">
-        <a href="#" class="text-decoration-none" onclick="alert('Módulo en desarrollo')">
-            <div class="card card-menu text-white bg-danger h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-clipboard-list mb-3"></i>
-                    <h5>Notas</h5>
-                    <p class="small">Registro de calificaciones</p>
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/materias/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #198754 0%, #146c43 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Materias</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Profesor' %}
+                                Ver catálogo
+                            {% else %}
+                                Gestión de materias
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-            </div>
-        </a>
+            </a>
+        </div>
+
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/secciones/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #6c757d 0%, #565e64 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Secciones</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Profesor' %}
+                                Ver secciones
+                            {% else %}
+                                Gestión de secciones
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/notas/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Notas</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            {% if rol_usuario == 'Profesor' %}
+                                Mis notas (crear/editar)
+                            {% elif rol_usuario == 'Secretaria' %}
+                                Ver notas
+                            {% else %}
+                                Gestión de notas
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        
+        
+        {% if rol_usuario == 'Director' or rol_usuario == 'Subdirector' or rol_usuario == 'Secretaria' %}
+        <div class="col-md-6 col-lg-4 col-xl-3">
+            <a href="/reportes/" class="text-decoration-none">
+                <div class="card shadow-sm h-100 border-0 card-modulo" style="background: linear-gradient(135deg, #6f42c1 0%, #4a2c85 100%); color: white;">
+                    <div class="card-body text-center py-4">
+                        <div class="icono-modulo mb-3">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h5 class="card-title mb-2">Reportes</h5>
+                        <p class="card-text mb-0 small opacity-75">
+                            Generar reportes e imprimir
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endif %}
+
     </div>
 </div>
+
+<style>
+.card-modulo {
+    transition: all 0.3s ease;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.card-modulo:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.2) !important;
+}
+.icono-modulo {
+    font-size: 3rem;
+    opacity: 0.9;
+}
+.card-modulo:hover .icono-modulo {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+</style>
 {% endblock %}
