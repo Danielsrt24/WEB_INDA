@@ -240,6 +240,47 @@
             });
         });
     </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-table-filter]').forEach(function(input) {
+                const container = document.getElementById(input.dataset.tableFilter);
+                const status = document.querySelector(
+                    '[data-filter-status="' + input.dataset.tableFilter + '"]'
+                );
+                if (!container) return;
+
+                const items = container.querySelectorAll('[data-filter-item]');
+                const emptyRows = container.querySelectorAll('[data-filter-empty]');
+                const normalize = value => value
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .toLocaleLowerCase();
+
+                input.addEventListener('input', function() {
+                    const query = normalize(input.value.trim());
+                    let visibleCount = 0;
+                    items.forEach(function(item) {
+                        const matches = normalize(item.textContent).includes(query);
+                        item.hidden = !matches;
+                        if (matches) visibleCount += 1;
+                    });
+                    emptyRows.forEach(function(emptyRow) {
+                        emptyRow.hidden = Boolean(query);
+                    });
+
+                    if (status) {
+                        status.hidden = !query;
+                        status.textContent = query
+                            ? (visibleCount
+                                ? visibleCount + (visibleCount === 1 ? ' resultado' : ' resultados')
+                                : 'No se encontraron registros.')
+                            : '';
+                    }
+                });
+            });
+        });
+    </script>
     
     {% if messages %}
         {% for message in messages %}

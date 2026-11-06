@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load l10n %}
 
 {% block content %}
 <div class="container mt-4">
@@ -38,6 +39,9 @@
                             </label>
                             <select name="tipo_permiso" class="form-select" required>
                                 <option value="">-- Seleccionar --</option>
+                                {% if permiso.tipo_permiso and permiso.tipo_permiso != 'Permiso medico' and permiso.tipo_permiso != 'Permiso personal' and permiso.tipo_permiso != 'Permiso por duelo' and permiso.tipo_permiso != 'Permiso por maternidad' and permiso.tipo_permiso != 'Vacaciones' and permiso.tipo_permiso != 'Otro' %}
+                                <option value="{{ permiso.tipo_permiso }}" selected>{{ permiso.tipo_permiso }}</option>
+                                {% endif %}
                                 <option value="Permiso medico" {% if permiso.tipo_permiso == 'Permiso medico' %}selected{% endif %}>Permiso médico</option>
                                 <option value="Permiso personal" {% if permiso.tipo_permiso == 'Permiso personal' %}selected{% endif %}>Permiso personal</option>
                                 <option value="Permiso por duelo" {% if permiso.tipo_permiso == 'Permiso por duelo' %}selected{% endif %}>Permiso por duelo</option>
@@ -53,15 +57,18 @@
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-calendar text-primary"></i> Fecha de Inicio <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" name="fecha_inicio" class="form-control" 
-                                       value="{{ permiso.fecha_inicio|default:'' }}" required>
+                                <input type="date" id="fecha-inicio" name="fecha_inicio" class="form-control" 
+                                       value="{{ permiso.fecha_inicio|date:'Y-m-d' }}" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">
                                     <i class="fas fa-calendar text-primary"></i> Fecha de Fin <span class="text-danger">*</span>
                                 </label>
-                                <input type="date" name="fecha_fin" class="form-control" 
-                                       value="{{ permiso.fecha_fin|default:'' }}" required>
+                                <input type="date" id="fecha-fin" name="fecha_fin" class="form-control" 
+                                       value="{{ permiso.fecha_fin|date:'Y-m-d' }}" required>
+                                <div class="invalid-feedback">
+                                    La fecha de inicio debe ser igual o anterior a la fecha de fin.
+                                </div>
                             </div>
                         </div>
 
@@ -71,7 +78,7 @@
                                 <i class="fas fa-clock text-primary"></i> Horas Afectadas
                             </label>
                             <input type="number" name="horas_afectadas" class="form-control" 
-                                   value="{{ permiso.horas_afectadas|default:0 }}" min="0" max="24">
+                                   value="{{ permiso.horas_afectadas|default_if_none:''|unlocalize }}" min="0" max="24" step="0.01">
                         </div>
 
                         
@@ -79,17 +86,24 @@
                             <label class="form-label fw-bold">
                                 <i class="fas fa-comment text-primary"></i> Motivo
                             </label>
-                            <textarea name="motivo" class="form-control" rows="3">{{ permiso.motivo|default:'' }}</textarea>
+                            <textarea name="motivo" class="form-control" rows="3">{{ permiso.motivo|default_if_none:'' }}</textarea>
                         </div>
 
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">
-                                <i class="fas fa-paperclip text-primary"></i> Comprobante (Foto/Documento) <span class="text-danger">*</span>
+                                <i class="fas fa-paperclip text-primary"></i> Comprobante (Foto/Documento)
+                                {% if accion == 'Crear' %}<span class="text-danger">*</span>{% endif %}
                             </label>
-                            <input type="file" name="comprobante" class="form-control" accept="image/*,.pdf" required>
+                            <input type="file" name="comprobante" class="form-control" accept="image/*,.pdf"
+                                   {% if accion == 'Crear' %}required{% endif %}>
                             <small class="text-muted d-block mb-2">
-                                <i class="fas fa-info-circle"></i> Debes subir una foto o documento PDF como comprobante
+                                <i class="fas fa-info-circle"></i>
+                                {% if accion == 'Crear' %}
+                                    Debes subir una foto o documento PDF como comprobante
+                                {% else %}
+                                    El comprobante actual se conservará si no seleccionas uno nuevo
+                                {% endif %}
                             </small>
                             
                             {% if permiso.comprobante %}
@@ -131,4 +145,24 @@
         </div>
     </div>
 </div>
+<script>
+    const fechaInicio = document.getElementById('fecha-inicio');
+    const fechaFin = document.getElementById('fecha-fin');
+
+    function validarFechas() {
+        fechaFin.min = fechaInicio.value;
+        const inicioPosteriorAlFin = fechaInicio.value && fechaFin.value
+            && fechaInicio.value > fechaFin.value;
+        fechaFin.setCustomValidity(
+            inicioPosteriorAlFin
+                ? 'La fecha de inicio debe ser igual o anterior a la fecha de fin.'
+                : ''
+        );
+        fechaFin.classList.toggle('is-invalid', Boolean(inicioPosteriorAlFin));
+    }
+
+    fechaInicio.addEventListener('input', validarFechas);
+    fechaFin.addEventListener('input', validarFechas);
+    validarFechas();
+</script>
 {% endblock %}

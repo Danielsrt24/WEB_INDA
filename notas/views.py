@@ -10,6 +10,7 @@ from .models import Nota
 from distribucion.models import Distribucion
 from secciones.models import Seccion
 from materias.models import Materia
+from core.validation import parse_decimal_at_least, parse_integer_at_least
 
 
 def _get_user_info(request):
@@ -146,7 +147,7 @@ def notas_por_seccion(request, id_distribucion):
                     periodos[f'p{i}'] = None
             
             notas_validas = [v for k, v in periodos.items() if k.startswith('p') and v is not None]
-            periodos['promedio'] = sum(notas_validas) / len(notas_validas) if notas_validas else None
+            periodos['promedio'] = sum(notas_validas) / 4 if notas_validas else None
             
             estudiante_notas['periodos'][tipo] = periodos
         
@@ -163,10 +164,21 @@ def notas_por_seccion(request, id_distribucion):
 
 
 def buscar_estudiante(request):
-    """Busca estudiantes por cédula/nombre, filtrados por sección."""
+    """Busca estudiantes por NIE/nombre, filtrados por sección."""
     query = request.GET.get('q', '')
     seccion_id = request.GET.get('seccion_id', '')
-    
+
+    if seccion_id:
+        try:
+            seccion_id = parse_integer_at_least(
+                seccion_id, 'La sección', minimum=1
+            )
+        except ValueError as error:
+            return JsonResponse(
+                {'estudiantes': [], 'error': str(error)},
+                status=400,
+            )
+
     if len(query) < 2:
         return JsonResponse({'estudiantes': []})
     
@@ -221,7 +233,17 @@ def crear_nota(request, id_distribucion):
         carnet = request.POST.get('carnet_estudiante', '').strip()
         nombre_estudiante = request.POST.get('nombre_estudiante', '').strip()
         tipo_evaluacion = request.POST.get('tipo_evaluacion', '').strip()
-        nota_val = float(request.POST.get('nota', 0))
+        nota_raw = request.POST.get('nota', '').strip()
+        if not nota_raw:
+            messages.error(request, 'La calificación es obligatoria.')
+            return redirect('notas:crear', id_distribucion=id_distribucion)
+        try:
+            nota_val = float(parse_decimal_at_least(
+                nota_raw, 'La calificación', maximum=10
+            ))
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect('notas:crear', id_distribucion=id_distribucion)
         
         if carnet and nombre_estudiante and tipo_evaluacion:
             Nota.objects.create(
@@ -262,7 +284,17 @@ def editar_nota(request, pk):
             return redirect('notas:menu')
     
     if request.method == 'POST':
-        nota.nota = float(request.POST.get('nota', 0))
+        nota_raw = request.POST.get('nota', '').strip()
+        if not nota_raw:
+            messages.error(request, 'La calificación es obligatoria.')
+            return redirect('notas:editar', pk=pk)
+        try:
+            nota.nota = float(parse_decimal_at_least(
+                nota_raw, 'La calificación', maximum=10
+            ))
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect('notas:editar', pk=pk)
         nota.save()
         messages.success(request, ' Nota actualizada exitosamente')
         return redirect('notas:detalle_seccion', id_distribucion=nota.id_distribucion)
@@ -302,33 +334,31 @@ def guardar_nota_ajax(request):
     
     try:
         data = json.loads(request.body)
-        id_distribucion = data.get('id_distribucion')
+        id_distribucion = parse_integer_at_least(
+            data.get('id_distribucion'), 'La distribución', minimum=1
+        )
         carnet = str(data.get('carnet', '')).strip()
         tipo_evaluacion = str(data.get('tipo_evaluacion', '')).strip()
         nota_raw = data.get('nota')
-        
 
-        if nota_raw is None or str(nota_raw).strip() == '':
-            nota_valor = 0.0
-        else:
+        nota_vacia = nota_raw is None or str(nota_raw).strip() == ''
+        if not nota_vacia:
             try:
-                nota_valor = float(nota_raw)
-            except (ValueError, TypeError):
+                nota_valor = float(parse_decimal_at_least(
+                    nota_raw, 'La calificación', maximum=10
+                ))
+            except ValueError as error:
                 return JsonResponse({
                     'success': False, 
-                    'error': f'Valor de nota inválido: "{nota_raw}". Debe ser un número.'
+                    'error': str(error)
                 })
-        
 
-        if nota_valor < 0 or nota_valor > 10:
-            return JsonResponse({'success': False, 'error': 'La nota debe estar entre 0 y 10'})
-        
-        if not id_distribucion or not carnet or not tipo_evaluacion:
+        if not carnet or not tipo_evaluacion:
             return JsonResponse({'success': False, 'error': 'Faltan datos obligatorios (distribución, carnet o tipo)'})
         
         if rol == 'Profesor':
             dist_ids = _get_distribuciones_profesor(id_profesor)
-            if int(id_distribucion) not in dist_ids:
+            if id_distribucion not in dist_ids:
                 return JsonResponse({'success': False, 'error': 'No tienes acceso a esta distribución'})
         
 
@@ -340,10 +370,28 @@ def guardar_nota_ajax(request):
         ).first()
         
         if nota_existente:
+            if nota_vacia:
+                nota_existente.estado = False
+                nota_existente.save()
+                return JsonResponse({
+                    'success': True,
+                    'mensaje': 'Nota eliminada',
+                    'nota': None,
+                    'carnet': carnet,
+                    'tipo': tipo_evaluacion
+                })
             nota_existente.nota = nota_valor
             nota_existente.save()
             mensaje = 'Nota actualizada'
         else:
+            if nota_vacia:
+                return JsonResponse({
+                    'success': True,
+                    'mensaje': 'No hay nota para eliminar',
+                    'nota': None,
+                    'carnet': carnet,
+                    'tipo': tipo_evaluacion
+                })
 
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -373,6 +421,8 @@ def guardar_nota_ajax(request):
         
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Datos JSON inválidos'})
+    except ValueError as error:
+        return JsonResponse({'success': False, 'error': str(error)}, status=400)
     except Exception as e:
 
         print(f" ERROR CRÍTICO en guardar_nota_ajax: {e}")

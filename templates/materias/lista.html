@@ -12,7 +12,8 @@
 
 <div class="card">
     <div class="card-body">
-        <table class="table table-striped">
+        {% include "partials/table_search.html" with target="materias-table" placeholder="Buscar materia por nombre..." %}
+        <table id="materias-table" class="table table-striped">
             <thead class="table-dark">
                 <tr>
                     <th>Código</th>
@@ -25,7 +26,7 @@
             </thead>
             <tbody>
                 {% for materia in materias %}
-                <tr>
+                <tr data-filter-item>
                     <td>{{ materia.codigo }}</td>
                     <td>{{ materia.nombre }}</td>
                     <td>{{ materia.creditos }}</td>
@@ -42,7 +43,7 @@
                     {% endif %}
                 </tr>
                 {% empty %}
-                <tr>
+                <tr data-filter-empty>
                     <td colspan="{% if puede_editar %}4{% else %}3{% endif %}" class="text-center text-muted">
                         No hay materias registradas
                     </td>

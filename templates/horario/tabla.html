@@ -5,7 +5,8 @@
     <h2> Tabla de Horarios</h2>
     <a href="{% url 'horario:lista' %}" class="btn btn-secondary mb-3">← Volver</a>
 
-    <table class="table table-bordered">
+    {% include "partials/table_search.html" with target="horario-tabla" placeholder="Buscar por día o aula..." %}
+    <table id="horario-tabla" class="table table-bordered">
         <thead class="table-dark">
             <tr>
                 <th>Día</th>
@@ -13,12 +14,12 @@
             </tr>
         </thead>
         <tbody>
-            {% for dia in dias %}
-            <tr>
-                <td><strong>{{ dia }}</strong></td>
+            {% for fila in filas_horario %}
+            <tr data-filter-item>
+                <td><strong>{{ fila.dia }}</strong></td>
                 <td>
-                    {% if dia in horas %}
-                        {% for h in horas.dia %}
+                    {% if fila.horarios %}
+                        {% for h in fila.horarios %}
                             <span class="badge bg-info">
                                 {{ h.hora_inicio }} - {{ h.hora_fin }} | Aula: {{ h.aula|default:"-" }}
                             </span>

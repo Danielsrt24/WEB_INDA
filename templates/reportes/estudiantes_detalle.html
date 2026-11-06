@@ -14,14 +14,15 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
+            {% include "partials/table_search.html" with target="reporte-estudiantes" placeholder="Buscar estudiante por nombre..." %}
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-sm">
+                <table id="reporte-estudiantes" class="table table-bordered table-striped table-sm">
                     <thead class="table-dark">
                         <tr>
                             <th>Sección</th>
                             <th>Nivel</th>
                             <th>Letra</th>
-                            <th>Cédula</th>
+                            <th>NIE</th>
                             <th>Apellido</th>
                             <th>Nombre</th>
                             <th class="text-center">Estado</th>
@@ -29,7 +30,7 @@
                     </thead>
                     <tbody>
                         {% for est in estudiantes %}
-                        <tr>
+                        <tr data-filter-item>
                             <td>{{ est.id_seccion.nombre }}</td>
                             <td>{{ est.id_seccion.nivel|default:"-" }}</td>
                             <td>{{ est.id_seccion.letra|default:"-" }}</td>
@@ -45,7 +46,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
+                        <tr data-filter-empty>
                             <td colspan="7" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
                         </tr>
                         {% endfor %}

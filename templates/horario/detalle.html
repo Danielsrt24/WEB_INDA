@@ -23,7 +23,8 @@
 
     {% if horarios %}
         <div class="table-responsive">
-            <table class="table table-bordered table-hover">
+            {% include "partials/table_search.html" with target="horario-detalle" placeholder="Buscar por día, docente, materia o sección..." %}
+            <table id="horario-detalle" class="table table-bordered table-hover">
                 <thead class="table-dark">
                     <tr>
                         <th>Día</th>
@@ -42,7 +43,7 @@
                 </thead>
                 <tbody>
                     {% for h in horarios %}
-                    <tr>
+                    <tr data-filter-item>
                         <td><strong>{{ h.dia }}</strong></td>
                         <td>{{ h.hora_inicio }}</td>
                         <td>{{ h.hora_fin }}</td>

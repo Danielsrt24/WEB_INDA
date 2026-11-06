@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.db import connection
+from django.db import IntegrityError, connection
 from .models import Usuario
 import bcrypt
 
@@ -41,22 +41,29 @@ def crear_usuario(request):
             return redirect('/usuarios/crear/')
         
         if Usuario.objects.filter(username=username).exists():
-            messages.error(request, f' El usuario "{username}" ya existe')
+            messages.error(
+                request,
+                f'El nombre de usuario "{username}" ya está en uso. Ingresa uno diferente.',
+            )
             return redirect('/usuarios/crear/')
         
 
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         
 
-        nuevo_usuario = Usuario.objects.create(
-            username=username,
-            password_hash=password_hash,
-            nombre=nombre,
-            rol=rol_usuario,
-            email=email,
-            estado=1,
-            id_profesor=None
-        )
+        try:
+            nuevo_usuario = Usuario.objects.create(
+                username=username,
+                password_hash=password_hash,
+                nombre=nombre,
+                rol=rol_usuario,
+                email=email,
+                estado=1,
+                id_profesor=None
+            )
+        except IntegrityError:
+            messages.error(request, f'El nombre de usuario "{username}" ya está en uso. Ingresa uno diferente.')
+            return redirect('/usuarios/crear/')
         
 
         if rol_usuario == 'Profesor':
@@ -98,10 +105,14 @@ def editar_usuario(request, user_id):
         nombre = request.POST.get('nombre', '').strip()
         email = request.POST.get('email', '').strip()
         estado = request.POST.get('estado')
+
+        if estado not in {None, 'on'}:
+            messages.error(request, 'El estado seleccionado no es válido')
+            return redirect('usuarios:editar', user_id=user_id)
         
         usuario.nombre = nombre
         usuario.email = email
-        usuario.estado = 1 if estado else 0
+        usuario.estado = 1 if estado == 'on' else 0
         
 
         if password:

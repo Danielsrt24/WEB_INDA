@@ -6,6 +6,7 @@ from .models import Distribucion
 from core.models import Profesor
 from materias.models import Materia
 from secciones.models import Seccion
+from core.validation import parse_integer_at_least
 
 
 @requiere_director
@@ -31,11 +32,23 @@ def crear_distribucion(request):
     """Crea una nueva distribución."""
     if request.method == 'POST':
         try:
+            id_profesor = parse_integer_at_least(
+                request.POST.get('id_profesor'), 'El profesor', minimum=1
+            )
+            id_materia = parse_integer_at_least(
+                request.POST.get('id_materia'), 'La materia', minimum=1
+            )
+            id_seccion = parse_integer_at_least(
+                request.POST.get('id_seccion'), 'La sección', minimum=1
+            )
+            horas_semanales = parse_integer_at_least(
+                request.POST.get('horas_semanales', 0), 'Las horas semanales'
+            )
             nueva_dist = Distribucion(
-                id_profesor_id=int(request.POST.get('id_profesor')),
-                id_materia_id=int(request.POST.get('id_materia')),
-                id_seccion_id=int(request.POST.get('id_seccion')),
-                horas_semanales=int(request.POST.get('horas_semanales', 0)),
+                id_profesor_id=id_profesor,
+                id_materia_id=id_materia,
+                id_seccion_id=id_seccion,
+                horas_semanales=horas_semanales,
                 estado=True
             )
             nueva_dist.save()
@@ -64,10 +77,18 @@ def editar_distribucion(request, pk):
 
     if request.method == 'POST':
         try:
-            distribucion.id_profesor_id = int(request.POST.get('id_profesor'))
-            distribucion.id_materia_id = int(request.POST.get('id_materia'))
-            distribucion.id_seccion_id = int(request.POST.get('id_seccion'))
-            distribucion.horas_semanales = int(request.POST.get('horas_semanales', 0))
+            distribucion.id_profesor_id = parse_integer_at_least(
+                request.POST.get('id_profesor'), 'El profesor', minimum=1
+            )
+            distribucion.id_materia_id = parse_integer_at_least(
+                request.POST.get('id_materia'), 'La materia', minimum=1
+            )
+            distribucion.id_seccion_id = parse_integer_at_least(
+                request.POST.get('id_seccion'), 'La sección', minimum=1
+            )
+            distribucion.horas_semanales = parse_integer_at_least(
+                request.POST.get('horas_semanales', 0), 'Las horas semanales'
+            )
             
             distribucion.save()
             messages.success(request, 'Distribución actualizada exitosamente')

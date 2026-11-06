@@ -1,6 +1,8 @@
 import requests
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.utils.dateparse import parse_time
+from core.validation import parse_integer_at_least
 
 API_URL = "http://127.0.0.1:8000/api"
 
@@ -44,7 +46,24 @@ def crear(request):
         hora_fin = request.POST.get('hora_fin')
         aula = request.POST.get('aula', '').strip()
         
-        if id_distribucion and dia and hora_inicio and hora_fin:
+        try:
+            id_distribucion = parse_integer_at_least(
+                id_distribucion, 'La distribución', minimum=1
+            )
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect('horario:crear')
+
+        hora_inicio = parse_time(hora_inicio) if hora_inicio else None
+        hora_fin = parse_time(hora_fin) if hora_fin else None
+        if hora_inicio is None or hora_fin is None or hora_inicio >= hora_fin:
+            messages.error(
+                request,
+                'Las horas deben ser válidas y la hora de inicio debe ser anterior a la hora de fin.',
+            )
+            return redirect('horario:crear')
+
+        if dia and hora_inicio and hora_fin:
             from .models import Horario
             Horario.objects.create(
                 id_distribucion_id=int(id_distribucion),
@@ -88,10 +107,14 @@ def tabla_horario(request):
         if dia not in horas:
             horas[dia] = []
         horas[dia].append(h)
+
+    filas_horario = [
+        {'dia': dia, 'horarios': horas.get(dia, [])}
+        for dia in dias
+    ]
     
     return render(request, 'horario/tabla.html', {
-        'dias': dias,
-        'horas': horas,
+        'filas_horario': filas_horario,
         'es_profesor': _es_profesor(request),
     })
 

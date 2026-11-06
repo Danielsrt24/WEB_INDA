@@ -17,7 +17,8 @@
 
 <div class="card shadow-sm">
     <div class="card-body">
-        <table class="table table-hover">
+        {% include "partials/table_search.html" with target="estudiantes-table" placeholder="Buscar estudiante por nombre..." %}
+        <table id="estudiantes-table" class="table table-hover">
             <thead class="table-dark">
                 <tr>
                     <th>NIE</th>
@@ -32,7 +33,7 @@
             </thead>
             <tbody>
                 {% for est in estudiantes %}
-                <tr>
+                <tr data-filter-item>
                     <td>{{ est.cedula }}</td>
                     <td>{{ est.nombre }}</td>
                     <td>{{ est.apellido }}</td>
@@ -51,7 +52,7 @@
                     {% endif %}
                 </tr>
                 {% empty %}
-                <tr>
+                <tr data-filter-empty>
                     <td colspan="{% if puede_editar %}6{% else %}5{% endif %}" class="text-center text-muted py-4">
                         No hay estudiantes registrados en esta sección
                     </td>

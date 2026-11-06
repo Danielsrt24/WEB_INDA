@@ -3,6 +3,8 @@ from django.db import connection
 from django.conf import settings
 from .models import Permiso
 from django.contrib import messages
+from django.utils.dateparse import parse_date
+from core.validation import parse_decimal_at_least, parse_integer_at_least
 import os
 
 
@@ -13,6 +15,12 @@ TIPOS_COMPROBANTE_PERMITIDOS = [
     'image/png',
     'application/pdf'
 ]
+
+
+def _fechas_en_orden(fecha_inicio, fecha_fin):
+    inicio = parse_date(fecha_inicio) if fecha_inicio else None
+    fin = parse_date(fecha_fin) if fecha_fin else None
+    return inicio is not None and fin is not None and inicio <= fin
 
 
 def _get_user_info(request):
@@ -140,7 +148,18 @@ def crear(request):
         fecha_fin = request.POST.get('fecha_fin')
         horas = request.POST.get('horas_afectadas', 0)
         motivo = request.POST.get('motivo', '').strip()
+
+        try:
+            horas = parse_decimal_at_least(
+                horas or 0, 'Las horas afectadas', maximum=24
+            )
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect('/permisos/crear/')
         
+        if fecha_ini and fecha_fin and not _fechas_en_orden(fecha_ini, fecha_fin):
+            messages.error(request, 'Verifica las fechas: el inicio debe ser igual o anterior al fin.')
+            return redirect('/permisos/crear/')
 
         if rol == 'Profesor':
             if not id_profesor:
@@ -152,7 +171,13 @@ def crear(request):
             if not prof_id:
                 messages.error(request, ' Debes seleccionar un profesor.')
                 return redirect('/permisos/crear/')
-            prof_id = int(prof_id)
+            try:
+                prof_id = parse_integer_at_least(
+                    prof_id, 'El profesor', minimum=1
+                )
+            except ValueError as error:
+                messages.error(request, str(error))
+                return redirect('/permisos/crear/')
         
 
         if 'comprobante' not in request.FILES:
@@ -180,7 +205,7 @@ def crear(request):
                 tipo_permiso=tipo,
                 fecha_inicio=fecha_ini,
                 fecha_fin=fecha_fin,
-                horas_afectadas=int(horas) if horas else 0,
+                horas_afectadas=horas,
                 motivo=motivo,
                 estado='pendiente',
                 id_usuario_registro=user_id,
@@ -220,10 +245,23 @@ def editar(request, id_permiso):
         permiso.tipo_permiso = request.POST.get('tipo_permiso', '').strip()
         permiso.fecha_inicio = request.POST.get('fecha_inicio')
         permiso.fecha_fin = request.POST.get('fecha_fin')
-        permiso.horas_afectadas = request.POST.get('horas_afectadas', 0)
+        try:
+            permiso.horas_afectadas = parse_decimal_at_least(
+                request.POST.get('horas_afectadas') or 0,
+                'Las horas afectadas',
+                maximum=24,
+            )
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect(f'/permisos/editar/{id_permiso}/')
         permiso.motivo = request.POST.get('motivo', '').strip()
         permiso.estado = request.POST.get('estado', 'pendiente')
         
+        if permiso.fecha_inicio and permiso.fecha_fin and not _fechas_en_orden(
+            permiso.fecha_inicio, permiso.fecha_fin
+        ):
+            messages.error(request, 'Verifica las fechas: el inicio debe ser igual o anterior al fin.')
+            return redirect(f'/permisos/editar/{id_permiso}/')
 
         if 'comprobante' in request.FILES:
             archivo = request.FILES['comprobante']

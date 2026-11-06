@@ -16,9 +16,10 @@
     </div>
     {% endif %}
 
-    <div class="row g-4">
+    {% include "partials/table_search.html" with target="secciones-notas" placeholder="Buscar por sección o materia..." %}
+    <div id="secciones-notas" class="row g-4">
         {% for item in secciones_con_materia %}
-        <div class="col-md-6 col-lg-4">
+        <div class="col-md-6 col-lg-4" data-filter-item>
             <a href="{% url 'notas:detalle_seccion' item.id_distribucion %}" class="text-decoration-none">
                 <div class="card shadow-sm h-100 border-0 card-seccion">
                     <div class="card-body p-4">
@@ -39,7 +40,7 @@
         </div>
         {% empty %}
         <div class="col-12">
-            <div class="alert alert-warning text-center border-0 shadow-sm">
+            <div class="alert alert-warning text-center border-0 shadow-sm" data-filter-empty>
                 <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
                 <p class="mb-0">No hay secciones disponibles para gestionar notas.</p>
             </div>

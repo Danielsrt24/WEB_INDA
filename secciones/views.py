@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.db import IntegrityError
 from django.db.models import Count
 import django.db.models as models
 from core.permissions import requiere_director
@@ -21,12 +22,20 @@ def lista_secciones(request):
 def crear_seccion(request):
     """Crea una nueva sección."""
     if request.method == 'POST':
-        Seccion.objects.create(
-            nombre=request.POST.get('nombre', '').strip(),
-            nivel=request.POST.get('nivel', '').strip(),
-            letra=request.POST.get('letra', '').strip(),
-            estado=True
-        )
+        nombre = request.POST.get('nombre', '').strip()
+        if Seccion.objects.filter(nombre=nombre).exists():
+            messages.error(request, 'Ese nombre de sección ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:crear')
+        try:
+            Seccion.objects.create(
+                nombre=nombre,
+                nivel=request.POST.get('nivel', '').strip(),
+                letra=request.POST.get('letra', '').strip(),
+                estado=True
+            )
+        except IntegrityError:
+            messages.error(request, 'Ese nombre de sección ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:crear')
         messages.success(request, ' Sección creada exitosamente')
         return redirect('secciones:lista')
     
@@ -38,10 +47,18 @@ def editar_seccion(request, pk):
     seccion = get_object_or_404(Seccion, pk=pk)
     
     if request.method == 'POST':
-        seccion.nombre = request.POST.get('nombre', '').strip()
+        nombre = request.POST.get('nombre', '').strip()
+        if Seccion.objects.filter(nombre=nombre).exclude(pk=pk).exists():
+            messages.error(request, 'Ese nombre de sección ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:editar', pk=pk)
+        seccion.nombre = nombre
         seccion.nivel = request.POST.get('nivel', '').strip()
         seccion.letra = request.POST.get('letra', '').strip()
-        seccion.save()
+        try:
+            seccion.save()
+        except IntegrityError:
+            messages.error(request, 'Ese nombre de sección ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:editar', pk=pk)
         
         messages.success(request, ' Sección actualizada exitosamente')
         return redirect('secciones:lista')
@@ -81,15 +98,23 @@ def crear_estudiante(request, seccion_id):
     seccion = get_object_or_404(Seccion, pk=seccion_id)
     
     if request.method == 'POST':
-        Estudiante.objects.create(
-            id_seccion=seccion,
-            nombre=request.POST.get('nombre', '').strip(),
-            apellido=request.POST.get('apellido', '').strip(),
-            cedula=request.POST.get('cedula', '').strip(),
-            fecha_nacimiento=request.POST.get('fecha_nacimiento', None) or None,
-            sexo=request.POST.get('sexo', '').strip(),
-            estado=True
-        )
+        nie = request.POST.get('cedula', '').strip()
+        if Estudiante.objects.filter(cedula=nie).exists():
+            messages.error(request, 'Ese NIE ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:crear_estudiante', seccion_id=seccion.pk)
+        try:
+            Estudiante.objects.create(
+                id_seccion=seccion,
+                nombre=request.POST.get('nombre', '').strip(),
+                apellido=request.POST.get('apellido', '').strip(),
+                cedula=nie,
+                fecha_nacimiento=request.POST.get('fecha_nacimiento', None) or None,
+                sexo=request.POST.get('sexo', '').strip(),
+                estado=True
+            )
+        except IntegrityError:
+            messages.error(request, 'Ese NIE ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:crear_estudiante', seccion_id=seccion.pk)
         messages.success(request, ' Estudiante creado exitosamente')
         return redirect('secciones:estudiantes', seccion_id=seccion.pk)
     
@@ -105,12 +130,20 @@ def editar_estudiante(request, pk):
     seccion = estudiante.id_seccion
     
     if request.method == 'POST':
+        nie = request.POST.get('cedula', '').strip()
+        if Estudiante.objects.filter(cedula=nie).exclude(pk=pk).exists():
+            messages.error(request, 'Ese NIE ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:editar_estudiante', pk=pk)
         estudiante.nombre = request.POST.get('nombre', '').strip()
         estudiante.apellido = request.POST.get('apellido', '').strip()
-        estudiante.cedula = request.POST.get('cedula', '').strip()
+        estudiante.cedula = nie
         estudiante.fecha_nacimiento = request.POST.get('fecha_nacimiento', None) or None
         estudiante.sexo = request.POST.get('sexo', '').strip()
-        estudiante.save()
+        try:
+            estudiante.save()
+        except IntegrityError:
+            messages.error(request, 'Ese NIE ya está en uso. Ingresa uno diferente.')
+            return redirect('secciones:editar_estudiante', pk=pk)
         
         messages.success(request, ' Estudiante actualizado exitosamente')
         return redirect('secciones:estudiantes', seccion_id=seccion.pk)

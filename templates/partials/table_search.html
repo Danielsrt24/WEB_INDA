@@ -1,0 +1,17 @@
+<div class="mb-3 no-print">
+    <label class="visually-hidden" for="{{ target }}-search">{{ placeholder }}</label>
+    <div class="input-group">
+        <span class="input-group-text" aria-hidden="true">
+            <i class="fas fa-search"></i>
+        </span>
+        <input
+            type="search"
+            id="{{ target }}-search"
+            class="form-control"
+            placeholder="{{ placeholder }}"
+            aria-label="{{ placeholder }}"
+            data-table-filter="{{ target }}"
+        >
+    </div>
+    <small class="form-text text-muted" data-filter-status="{{ target }}" aria-live="polite" hidden></small>
+</div>

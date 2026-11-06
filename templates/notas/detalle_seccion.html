@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load notas_tags %}
+{% load l10n %}
 
 {% block content %}
 <div class="container-fluid mt-4">
@@ -14,9 +15,6 @@
             </p>
         </div>
         <div>
-            <a href="{% url 'notas:crear' distribucion.id_distribucion %}" class="btn btn-primary me-2">
-                <i class="fas fa-plus"></i> Nueva Nota
-            </a>
             <a href="{% url 'notas:menu' %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
@@ -56,7 +54,10 @@
             <div class="card shadow-sm border-0">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        {% with target_id=forloop.counter|stringformat:"s" %}
+                        {% with search_target="notas-estudiantes-"|add:target_id %}
+                        {% include "partials/table_search.html" with target=search_target placeholder="Buscar estudiante por nombre..." %}
+                        <table id="{{ search_target }}" class="table table-hover align-middle">
                             <thead class="table-dark">
                                 <tr>
                                     <th style="width: 300px;"><i class="fas fa-user"></i> Estudiante</th>
@@ -72,7 +73,7 @@
                             </thead>
                             <tbody>
                                 {% for est in estudiantes %}
-                                <tr>
+                                <tr data-filter-item>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <i class="fas fa-user-circle fa-2x text-secondary me-2"></i>
@@ -88,32 +89,33 @@
                                         <input type="number" step="0.01" min="0" max="10"
                                                class="form-control form-control-sm nota-input {% if datos.p1 >= 7 %}is-valid{% elif datos.p1 is not None %}is-invalid{% endif %}"
                                                data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 1" data-periodo="p1"
-                                               value="{{ datos.p1|default:'' }}" placeholder="-"
+                                               value="{{ datos.p1|default_if_none:''|unlocalize }}" placeholder="-"
                                                {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
                                     </td>
                                     <td class="text-center">
                                         <input type="number" step="0.01" min="0" max="10"
                                                class="form-control form-control-sm nota-input {% if datos.p2 >= 7 %}is-valid{% elif datos.p2 is not None %}is-invalid{% endif %}"
                                                data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 2" data-periodo="p2"
-                                               value="{{ datos.p2|default:'' }}" placeholder="-"
+                                               value="{{ datos.p2|default_if_none:''|unlocalize }}" placeholder="-"
                                                {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
                                     </td>
                                     <td class="text-center">
                                         <input type="number" step="0.01" min="0" max="10"
                                                class="form-control form-control-sm nota-input {% if datos.p3 >= 7 %}is-valid{% elif datos.p3 is not None %}is-invalid{% endif %}"
                                                data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 3" data-periodo="p3"
-                                               value="{{ datos.p3|default:'' }}" placeholder="-"
+                                               value="{{ datos.p3|default_if_none:''|unlocalize }}" placeholder="-"
                                                {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
                                     </td>
                                     <td class="text-center">
                                         <input type="number" step="0.01" min="0" max="10"
                                                class="form-control form-control-sm nota-input {% if datos.p4 >= 7 %}is-valid{% elif datos.p4 is not None %}is-invalid{% endif %}"
                                                data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }} - Periodo 4" data-periodo="p4"
-                                               value="{{ datos.p4|default:'' }}" placeholder="-"
+                                               value="{{ datos.p4|default_if_none:''|unlocalize }}" placeholder="-"
                                                {% if rol_usuario == 'Secretaria' %}readonly{% endif %}>
                                     </td>
                                     <td class="text-center">
-                                        <div id="promedio-{{ est.cedula }}-{{ tipo|slugify }}">
+                                        <div id="promedio-{{ est.cedula }}-{{ tipo|slugify }}"
+                                             data-promedio data-carnet="{{ est.cedula }}" data-tipo="{{ tipo }}">
                                             {% if datos.promedio is not None %}
                                                 <strong class="{% if datos.promedio >= 7 %}text-success{% else %}text-danger{% endif %}" style="font-size:1.2rem;">
                                                     {{ datos.promedio|floatformat:1 }}
@@ -142,6 +144,8 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        {% endwith %}
+                        {% endwith %}
                     </div>
                 </div>
             </div>
@@ -186,7 +190,45 @@ document.addEventListener('DOMContentLoaded', function() {
         const carnet = input.dataset.carnet;
         const tipo = input.dataset.tipo;
         
-        if (valor === '') { input.classList.remove('is-valid', 'is-invalid'); input.value = ''; return; }
+        if (valor === '') {
+            input.style.backgroundColor = '#fff3cd';
+            input.disabled = true;
+            fetch("{% url 'notas:guardar_nota_ajax' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+                body: JSON.stringify({
+                    id_distribucion: idDistribucion,
+                    carnet: carnet,
+                    tipo_evaluacion: tipo,
+                    nota: null
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                input.disabled = false;
+                input.style.backgroundColor = '';
+                if (data.success) {
+                    input.classList.remove('is-valid', 'is-invalid');
+                    valoresOriginales[input] = '';
+                    actualizarPromedio(carnet, tipo);
+                    if (data.mensaje === 'Nota eliminada') {
+                        mostrarNotificacion(data.mensaje, 'success');
+                    }
+                } else {
+                    input.classList.add('is-invalid');
+                    input.value = valoresOriginales[input] || '';
+                    mostrarNotificacion(data.error, 'danger');
+                }
+            })
+            .catch(() => {
+                input.disabled = false;
+                input.classList.add('is-invalid');
+                input.style.backgroundColor = '';
+                input.value = valoresOriginales[input] || '';
+                mostrarNotificacion('Error de conexión con el servidor', 'danger');
+            });
+            return;
+        }
         
         const notaValor = parseFloat(valor);
         if (isNaN(notaValor) || notaValor < 0 || notaValor > 10) {
@@ -234,12 +276,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function actualizarPromedio(carnet, tipo) {
-        const inputs = document.querySelectorAll(`.nota-input[data-carnet="${carnet}"][data-tipo^="${tipo}"]`);
+        const tipoBase = tipo.replace(/ - Periodo [1-4]$/, '');
+        const inputs = Array.from(document.querySelectorAll('.nota-input')).filter(input =>
+            input.dataset.carnet === carnet &&
+            input.dataset.tipo.startsWith(`${tipoBase} - Periodo `)
+        );
         let suma = 0, count = 0;
-        inputs.forEach(input => { const valor = parseFloat(input.value); if (!isNaN(valor)) { suma += valor; count++; } });
-        const promedio = count > 0 ? (suma / count).toFixed(1) : '-';
-        const slugTipo = tipo.toLowerCase().replace(/\s+/g, '-');
-        const el = document.getElementById(`promedio-${carnet}-${slugTipo}`);
+        inputs.forEach(input => {
+            const valor = input.value.trim() === '' ? NaN : Number(input.value);
+            if (Number.isFinite(valor)) { suma += valor; count++; }
+        });
+        const promedio = count > 0 ? (suma / 4).toFixed(1) : '-';
+        const el = Array.from(document.querySelectorAll('[data-promedio]')).find(item =>
+            item.dataset.carnet === carnet && item.dataset.tipo === tipoBase
+        );
         if (el) {
             if (promedio !== '-') {
                 const val = parseFloat(promedio);

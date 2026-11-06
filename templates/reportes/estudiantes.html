@@ -12,7 +12,8 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
-            <table class="table table-bordered table-striped">
+            {% include "partials/table_search.html" with target="reporte-secciones" placeholder="Buscar sección por nombre..." %}
+            <table id="reporte-secciones" class="table table-bordered table-striped">
                 <thead class="table-dark">
                     <tr>
                         <th>Sección</th>
@@ -23,7 +24,7 @@
                 </thead>
                 <tbody>
                     {% for sec in secciones %}
-                    <tr>
+                    <tr data-filter-item>
                         <td>{{ sec.nombre }}</td>
                         <td>{{ sec.nivel|default:"-" }}</td>
                         <td>{{ sec.letra|default:"-" }}</td>
@@ -31,7 +32,7 @@
                             <span class="badge bg-primary">{{ sec.total_estudiantes }}</span>                        </td>
                     </tr>
                     {% empty %}
-                    <tr><td colspan="4" class="text-center text-muted">No hay secciones registradas.</td></tr>
+                    <tr data-filter-empty><td colspan="4" class="text-center text-muted">No hay secciones registradas.</td></tr>
                     {% endfor %}
                 </tbody>
             </table>

@@ -20,8 +20,9 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
+            {% include "partials/table_search.html" with target="secciones-horario-table" placeholder="Buscar sección por nombre..." %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table id="secciones-horario-table" class="table table-hover align-middle">
                     <thead class="table-dark">
                         <tr>
                             <th>Nombre de la Sección</th>
@@ -32,7 +33,7 @@
                     </thead>
                     <tbody>
                         {% for seccion in secciones %}
-                        <tr>
+                        <tr data-filter-item>
                             <td><strong>{{ seccion.nombre }}</strong></td>
                             <td>{{ seccion.nivel|default:"-" }}</td>
                             <td>{{ seccion.letra|default:"-" }}</td>
@@ -43,7 +44,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
+                        <tr data-filter-empty>
                             <td colspan="4" class="text-center text-muted py-4">
                                 <i class="fas fa-inbox fa-2x mb-2"></i><br>
                                 No hay secciones registradas en el sistema.

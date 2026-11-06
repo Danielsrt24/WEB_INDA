@@ -14,8 +14,9 @@
 
     <div class="card shadow-sm border-0">
         <div class="card-body">
+            {% include "partials/table_search.html" with target="reporte-notas" placeholder="Buscar nota por estudiante..." %}
             <div class="table-responsive">
-                <table class="table table-bordered table-striped table-sm">
+                <table id="reporte-notas" class="table table-bordered table-striped table-sm">
                     <thead class="table-dark">
                         <tr>
                             <th>Sección</th>
@@ -28,7 +29,7 @@
                     </thead>
                     <tbody>
                         {% for item in notas_detalle %}
-                        <tr>
+                        <tr data-filter-item>
                             <td>{{ item.seccion_nombre }} {{ item.seccion_letra|default:"" }}</td>
                             <td>{{ item.materia_nombre }}</td>
                             <td>{{ item.nota.carnet_estudiante }}</td>
@@ -41,7 +42,7 @@
                             </td>
                         </tr>
                         {% empty %}
-                        <tr>
+                        <tr data-filter-empty>
                             <td colspan="6" class="text-center text-muted py-4">No hay notas registradas en el sistema.</td>
                         </tr>
                         {% endfor %}

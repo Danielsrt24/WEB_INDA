@@ -17,7 +17,8 @@
         {% endfor %}
     {% endif %}
 
-    <table class="table table-striped">
+    {% include "partials/table_search.html" with target="horarios-table" placeholder="Buscar por día o aula..." %}
+    <table id="horarios-table" class="table table-striped">
         <thead>
             <tr>
                 <th>Día</th>
@@ -28,14 +29,14 @@
         </thead>
         <tbody>
             {% for h in horarios %}
-            <tr>
+            <tr data-filter-item>
                 <td>{{ h.dia }}</td>
                 <td>{{ h.hora_inicio }}</td>
                 <td>{{ h.hora_fin }}</td>
                 <td>{{ h.aula|default:"-" }}</td>
             </tr>
             {% empty %}
-            <tr>
+            <tr data-filter-empty>
                 <td colspan="4" class="text-center">No hay horarios registrados</td>
             </tr>
             {% endfor %}
